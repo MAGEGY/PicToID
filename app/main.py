@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import describe, engines, exif_utils, hosting
+from . import describe, engines, exif_utils, faces, hosting
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_DIR = BASE_DIR / "uploads"
@@ -93,6 +93,10 @@ def analyze(image_id: str):
     try:
         meta = exif_utils.extract_metadata(str(path))
         meta["dominant_colors"] = exif_utils.dominant_colors(str(path))
+        try:
+            meta["faces"] = faces.detect_and_crop(str(path), UPLOAD_DIR, image_id)
+        except Exception:
+            meta["faces"] = []
         return meta
     except Exception as e:
         raise HTTPException(400, f"could not analyze image: {e}")

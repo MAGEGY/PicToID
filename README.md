@@ -41,7 +41,11 @@ public URL and every engine works without the publish toggle.
 ## How it works
 
 1. **Upload** → stored in `uploads/`, original filename kept for filename-based searches.
-2. **Background job** (`POST /api/search` → poll `GET /api/search/{job_id}`) runs:
+2. **Face detection** — OpenCV YuNet (`FaceDetectorYN`, ONNX model vendored in
+   `app/models/`) detects faces during analysis; each face is auto-cropped and can
+   be reverse-searched individually — searching the cropped face is what makes
+   Lens/Yandex return person results.
+3. **Background job** (`POST /api/search` → poll `GET /api/search/{job_id}`) runs:
    - **Google Lens** — server-side upload, returns a live results URL.
    - **Link collection** — scrapes the Lens results page for external URLs
      (with `r.jina.ai` reader fallback); GitHub repo matches added too.
@@ -75,6 +79,10 @@ public URL and every engine works without the publish toggle.
 
 ## GitHub repos that extend this project
 
+- [opencv/opencv_zoo](https://github.com/opencv/opencv_zoo) — source of the YuNet face-detection model used in `app/models/` (MIT licensed). DNN models for better detectors live here.
+- [deepinsight/insightface](https://github.com/deepinsight/insightface) — state-of-the-art face embeddings; use for matching faces against **your own** image sets (e.g. "same person in these two photos?").
+- [serengil/deepface](https://github.com/serengil/deepface) — face verification + attribute analysis (age/emotion) with a simpler API; alternative local-matcher wiring.
+- [ageitgey/face_recognition](https://github.com/ageitgey/face_recognition) — dlib-based face encodings; simplest API for compare-two-faces features.
 - [exiftool](https://github.com/exiftool/exiftool) — deeper metadata extraction than Pillow (XMP, maker notes, thumbnails); drop-in upgrade for `exif_utils.py`.
 - [sherlock](https://github.com/sherlock-project/sherlock) — once results surface a username, hunt it across 400+ social networks.
 - [osintframework/osintframework](https://github.com/lockfale/osint-framework) — map of other search engines worth adding as engines.

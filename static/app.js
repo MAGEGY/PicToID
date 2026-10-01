@@ -65,6 +65,22 @@ async function loadMeta() {
   if (m.dominant_colors?.length)
     html += `<div class="swatches">${m.dominant_colors.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join("")}</div>`;
   $("#metaCard").innerHTML = html;
+
+  const row = $("#facesRow");
+  row.innerHTML = "";
+  $("#facesTitle").hidden = !(m.faces || []).length;
+  for (const f of m.faces || []) {
+    const img = document.createElement("img");
+    img.src = api(f.url);
+    img.title = "Reverse-search this face";
+    img.onclick = () => {
+      imageId = f.id;
+      $("#engineList").innerHTML = "";
+      $("#foundList").innerHTML = "";
+      startSearch();
+    };
+    row.appendChild(img);
+  }
 }
 
 async function loadDescription() {

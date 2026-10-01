@@ -47,6 +47,13 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .8px; color: va
 .swatch { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); }
 .muted { color: var(--muted); } .small { font-size: 12px; }
 
+.faces { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+.faces img {
+  height: 90px; border-radius: 10px; cursor: pointer;
+  border: 2px solid var(--border); transition: border-color .15s;
+}
+.faces img:hover { border-color: var(--accent); }
+
 .engine {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
