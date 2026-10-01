@@ -125,6 +125,16 @@ function pollJob(jobId) {
 }
 
 function renderJob(job) {
+  const v = $("#verdict");
+  if (job.verdict) {
+    v.hidden = false;
+    v.className = "verdict " + job.verdict;
+    v.textContent = job.verdict === "identified"
+      ? "IDENTIFIED — found on social media"
+      : job.verdict === "partial"
+        ? "PARTIAL — pages found, no confirmed social profiles"
+        : "NOT FOUND — try a face-crop search or PimEyes";
+  }
   renderEngines({ engines: job.engines, found: job.found });
   (job.warnings || []).forEach((w) => {
     if (!shownWarnings.has(w)) { shownWarnings.add(w); setStatus(w, true, true); }
@@ -148,7 +158,10 @@ function renderEngines(data) {
   for (const r of data.found || []) {
     const div = document.createElement("div");
     div.className = "engine";
-    div.innerHTML = `<div><div class="name">${esc(r.host)}</div><div class="note">${esc(r.url)}</div></div>
+    const badge = r.kind ? `<span class="badge ${r.kind}">${r.kind.toUpperCase()}</span>` : "";
+    const sub = r.title ? `<div class="note">${esc(r.title)}</div>` : `<div class="note">${esc(r.url)}</div>`;
+    div.innerHTML = `<div><div class="name">${esc(r.host)}${badge}</div>${sub}
+      <div class="note small">${esc(r.url)}</div></div>
       <a class="open" href="${esc(r.url)}" target="_blank" rel="noopener">Open →</a>`;
     found.appendChild(div);
   }

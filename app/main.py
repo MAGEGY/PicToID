@@ -214,8 +214,14 @@ async def _run_search(job_id: str, path: str, image_id: str, publish: bool, base
             step("collecting result links…")
             job["found"] = await engines.collect_links(lens_url)
             step(f"collected {len(job['found'])} links")
+            if job["found"]:
+                step("clarifying results (social vs web)…")
+                job["found"], job["verdict"] = await engines.clarify_found(job["found"])
+            else:
+                job["verdict"] = "not_found"
         else:
             job["warnings"].append("Google Lens direct upload failed.")
+            job["verdict"] = "not_found"
 
         public_url = None
         if _is_public_base(base):
@@ -256,6 +262,27 @@ async def _run_search(job_id: str, path: str, image_id: str, publish: bool, base
                 )
             elif gh_found:
                 step(f"GitHub: {len(gh_found)} repo matches")
+
+        # PimEyes — face-specialized engine; auto-upload when possible
+        step("trying PimEyes face search…")
+        pm_url = await engines.pimeyes_results_url(path)
+        job["engines"].append({
+            "id": "pimeyes",
+            "name": "PimEyes (face search)",
+            "url": pm_url or "https://pimeyes.com",
+            "note": (
+                "Face-specialized engine — results page ready."
+                if pm_url else
+                "Auto-upload failed — open and upload the image manually. "
+                "Strongest tool for identifying faces."
+            ),
+        })
+
+        if job.get("verdict") in (None, "not_found", "partial"):
+            job["warnings"].append(
+                "Not identified on public web results — click a detected face to "
+                "search the crop, then try PimEyes/Yandex (face-similarity)."
+            )
 
         job["status"] = "done"
     except Exception as e:

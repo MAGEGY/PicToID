@@ -62,3 +62,17 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .8px; color: va
 .engine .name { font-weight: 600; }
 .engine .note { color: var(--muted); font-size: 12px; }
 .engine a.open { white-space: nowrap; }
+
+.verdict {
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-weight: 700;
+}
+.verdict.identified { background: #0d2b1a; color: #4ade80; border: 1px solid #166534; }
+.verdict.partial    { background: #2b2110; color: #f0b45c; border: 1px solid #8a5a12; }
+.verdict.not_found  { background: #2b1214; color: #f87171; border: 1px solid #8a1f24; }
+
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  padding: 1px 7px; border-radius: 20px; vertical-align: middle; margin-left: 8px;
+}
+.badge.social { background: #123a63; color: #7cc4ff; }
+.badge.web    { background: #2a2f38; color: #9aa5b3; }

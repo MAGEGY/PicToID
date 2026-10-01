@@ -1,6 +1,7 @@
 """Reverse image search engines: server-side uploads and URL deep links."""
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 import time
@@ -49,6 +50,68 @@ SKIP_DOMAINS = (
 
 JINA_API_KEY = os.environ.get("JINA_API_KEY")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+
+SOCIAL_DOMAINS = (
+    "facebook.", "instagram.", "twitter.", "x.com", "linkedin.", "tiktok.",
+    "reddit.", "pinterest.", "vk.com", "vk.", "tumblr.", "youtube.",
+    "github.", "threads.net", "mastodon", "bsky.app", "snapchat.",
+    "t.me", "telegram.", "discord.", "flickr.", "medium.",
+)
+
+
+def _basename(path: str) -> str:
+    return path.rsplit("\\", 1)[-1].rsplit("/", 1)[-1]
+
+
+async def pimeyes_results_url(path: str) -> str | None:
+    """Upload to PimEyes' public endpoint; return results URL or None."""
+    try:
+        async with httpx.AsyncClient(
+            timeout=90, follow_redirects=True,
+            headers={"User-Agent": USER_AGENT},
+        ) as client:
+            with open(path, "rb") as f:
+                r = await client.post(
+                    "https://pimeyes.com/api/upload/exec",
+                    files={"image[]": (_basename(path), f)},
+                )
+        data = r.json()
+        h = data.get("searchHash") or data.get("search_hash")
+        if h:
+            return f"https://pimeyes.com/en/results/{h}"
+        if isinstance(data.get("results"), dict) and data["results"].get("searchHash"):
+            return f"https://pimeyes.com/en/results/{data['results']['searchHash']}"
+        return None
+    except Exception:
+        return None
+
+
+async def clarify_found(found: list[dict], max_fetch: int = 8) -> tuple[list[dict], str]:
+    """Tag each collected link as social/web and pull its page title.
+    Returns (entries, verdict) where verdict ∈ identified | partial | not_found."""
+    sem = asyncio.Semaphore(4)
+
+    async def one(item: dict) -> dict:
+        host = item.get("host", "")
+        kind = "social" if any(d in host for d in SOCIAL_DOMAINS) else "web"
+        title = ""
+        try:
+            async with sem:
+                page = await _fetch_page(item["url"])
+            m = re.search(r"<title[^>]*>([^<]{3,180})", page, re.I) \
+                or re.search(r"^#\s+(.{3,160})", page, re.M)
+            if m:
+                title = re.sub(r"\s+", " ", m.group(1)).strip()
+        except Exception:
+            pass
+        return {**item, "kind": kind, "title": title}
+
+    entries = list(await asyncio.gather(*[one(i) for i in found[:max_fetch]]))
+    entries += [dict(i, kind=("social" if any(d in i.get("host", "") for d in SOCIAL_DOMAINS) else "web"))
+                for i in found[max_fetch:]]
+    social = sum(1 for e in entries if e["kind"] == "social")
+    verdict = "identified" if social else ("partial" if entries else "not_found")
+    return entries, verdict
 
 
 def github_engine(filename: str | None) -> dict | None:
