@@ -28,6 +28,16 @@ Then open `https://<tunnel-url>/?key=your-secret`.
 - When the app is reached over a public URL, TinEye/Yandex/Bing fetch the image **directly from the app** — no temp host needed.
 - Quick-tunnel URLs change on restart; use a named Cloudflare tunnel (free account) for a permanent address, or deploy the app to a host (Render / Railway / a VPS) and skip the tunnel.
 
+### Docker
+
+```bash
+docker build -t pictoid .
+docker run -p 8000:8000 -e PICFINDER_KEY=your-secret pictoid
+```
+
+Works out of the box on Render, Railway, Fly.io, or any VPS — give the app a
+public URL and every engine works without the publish toggle.
+
 ## How it works
 
 1. **Upload** → stored in `uploads/`, original filename kept for filename-based searches.
