@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>picfinder — reverse image search hub</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>picfinder</h1>
+      <p class="tagline">Upload a photo → analyze it → reverse-search every engine at once.</p>
+    </header>
+
+    <section id="dropzone" tabindex="0">
+      <input type="file" id="fileInput" accept="image/*" hidden />
+      <div id="dropLabel">
+        <strong>Drop an image here</strong>
+        <span>or click to browse — jpg, png, webp, gif, bmp, tiff (≤15 MB)</span>
+      </div>
+      <img id="preview" hidden alt="uploaded preview" />
+    </section>
+
+    <section id="options" hidden>
+      <label>
+        <input type="checkbox" id="publishToggle" />
+        Publish image temporarily <em>(required for TinEye / Yandex / Bing — auto-expires in 1h)</em>
+      </label>
+      <button id="searchBtn">Build search links</button>
+    </section>
+
+    <section id="status" hidden></section>
+
+    <section id="results" hidden>
+      <div class="col">
+        <h2>Metadata</h2>
+        <div id="metaCard" class="card"></div>
+        <h2>Description</h2>
+        <div id="descCard" class="card"><span class="muted">generating…</span></div>
+      </div>
+      <div class="col">
+        <h2>Search engines</h2>
+        <div id="engineList"></div>
+        <p class="muted small">
+          Results pages list the websites where this (or a similar) image appears —
+          social-media profiles included. Open several engines; coverage differs per engine.
+        </p>
+        <h2 style="margin-top:20px">Collected pages <span class="muted small">(from Lens results, best-effort)</span></h2>
+        <div id="foundList"></div>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
